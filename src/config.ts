@@ -41,8 +41,19 @@ export const CASO: CasoConfig = {
  * dejarian la arcada descentrada y pequena en el encuadre.
  */
 export const CENTRO: Vec3 = [1.3, 16.3, -106.5];
-export const CAMARA_INICIAL: Vec3 = [1.3, 118.2, 21.6];
 export const ARRIBA: Vec3 = [0, 1, 0];
+
+/** Direccion desde la que mira la camara (unitaria): al frente y elevada. */
+export const DIRECCION_CAMARA: Vec3 = [0, 0.6225, 0.7825];
+
+/**
+ * Distancia que encuadra la arcada en una ventana apaisada.
+ *
+ * En vertical NO vale: el campo de vision horizontal se estrecha con la relacion
+ * de aspecto, asi que la arcada se salia por los lados en movil. La distancia
+ * efectiva se corrige en SplatViewer segun el aspecto real de la ventana.
+ */
+export const DISTANCIA_BASE = 164;
 
 /** Umbral de alfa (0-255) por debajo del cual se descarta un splat. */
 export const UMBRAL_ALFA = 5;

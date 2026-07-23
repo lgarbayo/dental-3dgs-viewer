@@ -1,6 +1,26 @@
 import { SceneFormat, Viewer } from '@mkkellogg/gaussian-splats-3d';
+import type { Vec3 } from '@mkkellogg/gaussian-splats-3d';
 
-import { ARRIBA, CAMARA_INICIAL, CENTRO, SH_GRADO, UMBRAL_ALFA } from './config';
+import { ARRIBA, CENTRO, DIRECCION_CAMARA, DISTANCIA_BASE, SH_GRADO, UMBRAL_ALFA }
+  from './config';
+
+/**
+ * Aleja la camara en ventanas verticales.
+ *
+ * Con FOV vertical fijo, el campo horizontal se estrecha segun el aspecto: en un
+ * movil en vertical (aspecto ~0,46) la arcada se salia por los lados. Encuadrar
+ * en ancho exige multiplicar la distancia por 1/aspecto.
+ */
+function posicionCamara(): Vec3 {
+  const aspecto = window.innerWidth / window.innerHeight;
+  const distancia = DISTANCIA_BASE * Math.max(1, 1 / aspecto);
+  return [
+    CENTRO[0] + DIRECCION_CAMARA[0] * distancia,
+    CENTRO[1] + DIRECCION_CAMARA[1] * distancia,
+    CENTRO[2] + DIRECCION_CAMARA[2] * distancia,
+  ];
+}
+
 
 export interface SplatViewerOptions {
   /** Contenedor donde se monta el canvas. */
@@ -36,7 +56,7 @@ export class SplatViewer {
     const viewer = new Viewer({
       rootElement: this.opciones.raiz,
       cameraUp: ARRIBA,
-      initialCameraPosition: CAMARA_INICIAL,
+      initialCameraPosition: posicionCamara(),
       initialCameraLookAt: CENTRO,
       sphericalHarmonicsDegree: SH_GRADO,
       useBuiltInControls: true,

@@ -35,24 +35,6 @@ esféricos de grado 2 — por eso el brillo cambia al girar el modelo. Frente a
 «L1 sola, sin densificar, sin armónicos» eso sube el PSNR de 22,6 a 32,5 dB, y
 la fracción de gaussianas útiles (opacas y de tamaño razonable) del 6 % al 35 %.
 
-## Dos detalles de implementación que no son obvios
-
-**Aislamiento de origen cruzado.** El visor ordena los splats en un web worker y
-por defecto usa `SharedArrayBuffer`, que exige que la página esté
-`crossOriginIsolated` (cabeceras `COOP`/`COEP`). Un host estático como GitHub
-Pages **no puede enviarlas**. `SplatViewer` lo detecta en ejecución y cae al
-camino sin memoria compartida, así que funciona en cualquier sitio; Vite sí pone
-las cabeceras en local (`vite.config.ts`) para usar el camino rápido.
-
-**Encuadre.** La escena viene en milímetros y conserva las coordenadas de la
-malla original (no está centrada en el origen). El centro de cámara se calcula
-sobre las gaussianas «de masa» —opacas y de menos de 5 mm—, porque el centroide
-de *todas* queda desplazado por las que quedan dispersas tras densificar.
-
-**Armónicos esféricos.** El ply trae 9 coeficientes por canal, así que el visor
-debe cargarlo con `sphericalHarmonicsDegree: 2`. Con grado 0 se vería, pero
-plano: se perdería la dependencia del color con el ángulo de vista.
-
 ## Estructura
 
 ```

@@ -1,7 +1,7 @@
 import { CASO } from './config';
 import { InfoPanel } from './InfoPanel';
 import { SplatViewer } from './SplatViewer';
-import './estilos.css';
+import './style.css';
 
 function requerir<T extends HTMLElement>(selector: string): T {
   const el = document.querySelector<T>(selector);

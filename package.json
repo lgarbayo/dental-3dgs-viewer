@@ -1,0 +1,22 @@
+{
+  "name": "dental-3dgs-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Visor web del campo de gaussianas entrenado sobre escaneos intraorales",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mkkellogg/gaussian-splats-3d": "^0.4.7",
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.185.1",
+    "typescript": "^7.0.2",
+    "vite": "^7.0.0"
+  }
+}

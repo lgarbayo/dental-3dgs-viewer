@@ -61,8 +61,8 @@ export const CASOS: CasoConfig[] = [
     nombre: 'Bite2Text · F1980 (inferior)',
     arcada: 'lower',
     ply: 'bite2text_f1980_lower.ply',
-    primitivas: 150_000,
-    psnrRetenidas: 29.62,
+    primitivas: 142_805,
+    psnrRetenidas: 29.60,
     vistasEntrenamiento: 1_200,
     vistasRetenidas: 400,
     iteraciones: 6_000,
@@ -78,7 +78,8 @@ export const CASOS: CasoConfig[] = [
     // no se veria nada. Aqui NO se poda (se componen todas, como en el render gsplat).
     umbralAlfa: 0,
     nota:
-      'Escáner STL pelado → 1600 vistas Blender (EEVEE) a 1024 px → gsplat. ' +
+      'Escáner STL pelado → 1600 vistas Blender (EEVEE) a 1024 px → gsplat, ' +
+      'pérdida 0,8·L1 + 0,2·(1−SSIM) — la SSIM afila los bordes de los dientes. ' +
       'Sin armónicos (color RGB plano, grado 0): el color no cambia al girar.',
     creditos: 'Datos: Bite2Text (UNIMORE / Univ. Ferrara), CC-BY-SA 4.0 — derivado bajo la misma licencia.',
   },

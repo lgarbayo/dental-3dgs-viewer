@@ -136,6 +136,26 @@ dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
 
 .error { color: #eb6834; text-align: center; }
 
+/* Desplegable de caso: arriba a la derecha, para no pisar la ficha (izquierda). */
+.selector {
+  position: fixed;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 15;
+  pointer-events: auto;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--superficie) 94%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  max-width: calc(100vw - 1.8rem);
+}
+.selector:focus-visible { outline: 2px solid var(--azul); outline-offset: 1px; }
+
 @media (prefers-color-scheme: dark) {
   .ficha {
     border-color: #2a2a30;
@@ -145,4 +165,9 @@ dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
   dl > div { border-bottom-color: #2a2a30; }
   .creditos { border-top-color: #2a2a30; }
   dt, .caso, .nota, .creditos, .controles { color: #a3a29e; }
+  .selector {
+    border-color: #2a2a30;
+    background: color-mix(in srgb, #16161a 92%, transparent);
+    color: #f2f1ee;
+  }
 }

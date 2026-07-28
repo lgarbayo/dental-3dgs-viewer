@@ -73,10 +73,11 @@ export const CASOS: CasoConfig[] = [
     arriba: [0, 0, 1],
     direccionCamara: [0.9, 0, 0.42],
     distanciaBase: 3.5,
-    // Campo entrenado sin regularizacion de opacidad: la mediana es ~0,01, asi
-    // que el umbral 5/255 del otro caso se cargaria el 69% de las gaussianas y
-    // no se veria nada. Aqui NO se poda (se componen todas, como en el render gsplat).
-    umbralAlfa: 0,
+    // Campo de baja opacidad (mediana ~0,01): el 83% de las gaussianas son
+    // "neblina" que difumina los bordes (pelillos). Medido renderizando: cortar
+    // a ~8/255 quita esa neblina y deja la arcada SOLIDA y limpia (el 17% opaco
+    // ya sostiene toda la superficie), igual que el umbral 5 del otro caso.
+    umbralAlfa: 8,
     nota:
       'Escáner STL pelado → 1600 vistas Blender (EEVEE) a 1024 px → gsplat, ' +
       'pérdida 0,8·L1 + 0,2·(1−SSIM) — la SSIM afila los bordes de los dientes. ' +

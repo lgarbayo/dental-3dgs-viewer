@@ -61,8 +61,8 @@ export const CASOS: CasoConfig[] = [
     nombre: 'Bite2Text · F1980 (inferior)',
     arcada: 'lower',
     ply: 'bite2text_f1980_lower.ply',
-    primitivas: 142_805,
-    psnrRetenidas: 29.60,
+    primitivas: 130_485,
+    psnrRetenidas: 31.50,
     vistasEntrenamiento: 1_200,
     vistasRetenidas: 400,
     iteraciones: 6_000,
@@ -79,9 +79,11 @@ export const CASOS: CasoConfig[] = [
     // ya sostiene toda la superficie), igual que el umbral 5 del otro caso.
     umbralAlfa: 8,
     nota:
-      'Escáner STL pelado → 1600 vistas Blender (EEVEE) a 1024 px → gsplat, ' +
-      'pérdida 0,8·L1 + 0,2·(1−SSIM) — la SSIM afila los bordes de los dientes. ' +
-      'Sin armónicos (color RGB plano, grado 0): el color no cambia al girar.',
+      'Escáner STL + color de las 5 fotos intraorales (image-agent, sin EXIF): ' +
+      'esmalte y encía muestreados y aplicados por región (coronas/margen). ' +
+      '1600 vistas Blender (EEVEE) a 1024 px → gsplat, pérdida 0,8·L1 + 0,2·(1−SSIM). ' +
+      'Color RGB plano (grado 0): no cambia al girar. El color per-píxel exige ' +
+      'fusión foto↔malla (fase posterior).',
     creditos: 'Datos: Bite2Text (UNIMORE / Univ. Ferrara), CC-BY-SA 4.0 — derivado bajo la misma licencia.',
   },
 ];

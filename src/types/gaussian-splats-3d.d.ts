@@ -42,6 +42,13 @@ declare module '@mkkellogg/gaussian-splats-3d' {
     gpuAcceleratedSort?: boolean;
     sceneRevealMode?: SceneRevealMode;
     antialiased?: boolean;
+    /**
+     * Habilita los uniforms opcionales por escena (`sceneOpacity`,
+     * `sceneVisibility`). SIN esto, poner `visible = false` en una escena no
+     * tiene efecto: el bundle solo copia esos uniforms si esta activo
+     * (`updateUniforms`, guardado tras `if (this.enableOptionalEffects)`).
+     */
+    enableOptionalEffects?: boolean;
     camera?: Camera;
     renderer?: WebGLRenderer;
     threeScene?: Scene;
@@ -59,6 +66,12 @@ declare module '@mkkellogg/gaussian-splats-3d' {
     onProgress?: (percent: number, message: string, stage: unknown) => void;
   }
 
+  /** Una escena cargada dentro del visor: una capa, en nuestro uso. */
+  export interface SplatScene {
+    visible: boolean;
+    opacity: number;
+  }
+
   export class Viewer {
     constructor(options?: ViewerOptions);
     addSplatScene(path: string, options?: SplatSceneOptions): Promise<void>;
@@ -66,6 +79,8 @@ declare module '@mkkellogg/gaussian-splats-3d' {
     stop(): void;
     dispose(): Promise<void>;
     getSplatCount?(): number;
+    getSceneCount(): number;
+    getSplatScene(sceneIndex: number): SplatScene;
     camera: Camera;
   }
 

@@ -6,6 +6,30 @@ import type { Vec3 } from '@mkkellogg/gaussian-splats-3d';
  *  - Teeth3DS+ conserva coordenadas en mm (no centrado) y color con armonicos.
  *  - Bite2Text esta normalizado a caja unidad y su color es RGB plano (grado 0).
  */
+/**
+ * Una capa de densidad: un campo gaussiano propio, con su ventana de HU.
+ *
+ * Las capas de un caso son DISJUNTAS y cubren toda la anatomia, asi que
+ * encenderlas suma atenuacion (Beer-Lambert) sin contar nada dos veces. Ver
+ * "solo hueso" o "esmalte + hueso" es cargar unos ficheros y no otros.
+ */
+export interface CapaConfig {
+  readonly id: string;
+  readonly nombre: string;
+  readonly ply: string;
+  readonly primitivas: number;
+  /** Ventana de Hounsfield de la capa; null = sin cota por ese lado. */
+  readonly hu: readonly [number | null, number | null];
+  /**
+   * Ganancia de visualizacion: alfa = 1 - exp(-g*sigma). NO es dato — la sigma
+   * del artefacto es densidad sin cota, y un visor espera alfa en [0,1].
+   */
+  readonly gananciaDisplay: number;
+  /** Falso color para distinguir capas a ojo. El artefacto no tiene color. */
+  readonly color: string;
+  readonly encendida: boolean;
+}
+
 export interface CasoConfig {
   readonly id: string;
   /** Etiqueta para el desplegable. */
@@ -31,6 +55,8 @@ export interface CasoConfig {
   /** Nota de receta y creditos de datos, propios de cada caso. */
   readonly nota: string;
   readonly creditos: string;
+  /** Si existe, el caso se carga como N campos conmutables en vez de uno solo. */
+  readonly capas?: readonly CapaConfig[];
 }
 
 export const CASOS: CasoConfig[] = [

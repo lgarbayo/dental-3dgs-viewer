@@ -1,5 +1,6 @@
 import { CASOS } from './config';
 import { InfoPanel } from './InfoPanel';
+import { PanelCapas } from './PanelCapas';
 import { SplatViewer } from './SplatViewer';
 import './style.css';
 
@@ -53,6 +54,13 @@ async function main(): Promise<void> {
   try {
     await visor.cargar();
     cargando.classList.add('oculto');
+    // El panel se monta DESPUES de cargar: encender una capa que aun no existe
+    // como escena no haria nada y la casilla mentiria.
+    if (caso.capas) {
+      new PanelCapas(caso.capas, (indice, visible) =>
+        visor.mostrarCapa(indice, visible),
+      ).montar(interfaz);
+    }
   } catch (error) {
     cargando.innerHTML =
       `<p class="error">No se pudo cargar <code>${caso.ply}</code>.<br>` +

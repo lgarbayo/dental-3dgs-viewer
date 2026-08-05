@@ -68,19 +68,41 @@ export class SplatViewer {
       // Medido: shared=1/gpu=1 -> 0 pixeles; shared=1/gpu=0 -> 28k. La
       // ordenacion en CPU no es cuello de botella aqui, asi que se deja off.
       gpuAcceleratedSort: false,
+      // Sin esto, poner `visible = false` en una escena NO tiene efecto: el
+      // bundle solo copia los uniforms `sceneVisibility`/`sceneOpacity` cuando
+      // esta activo. Es lo que hace conmutables las capas.
+      enableOptionalEffects: caso.capas !== undefined,
     });
     this.viewer = viewer;
 
-    await viewer.addSplatScene(caso.ply, {
-      format: SceneFormat.Ply,
-      splatAlphaRemovalThreshold: caso.umbralAlfa,
-      showLoadingUI: false,
-      progressiveLoad: false,
-      onProgress: (porcentaje, mensaje) =>
-        this.opciones.onProgress?.(porcentaje, mensaje),
-    });
+    // Un caso con capas es N escenas, una por fichero: encender y apagar es
+    // cambiar un uniform, no recargar. Se cargan EN ORDEN para que el indice de
+    // escena coincida con el indice de capa del config.
+    const ficheros = caso.capas ? caso.capas.map((c) => c.ply) : [caso.ply];
+    for (const [i, fichero] of ficheros.entries()) {
+      await viewer.addSplatScene(fichero, {
+        format: SceneFormat.Ply,
+        splatAlphaRemovalThreshold: caso.umbralAlfa,
+        showLoadingUI: false,
+        progressiveLoad: false,
+        onProgress: (porcentaje, mensaje) =>
+          this.opciones.onProgress?.(
+            (100 * i + porcentaje) / ficheros.length,
+            mensaje,
+          ),
+      });
+    }
+
+    caso.capas?.forEach((capa, i) => this.mostrarCapa(i, capa.encendida));
 
     viewer.start();
+  }
+
+  /** Enciende o apaga una capa. El indice es el del array `capas` del caso. */
+  mostrarCapa(indice: number, visible: boolean): void {
+    if (!this.viewer) return;
+    if (indice < 0 || indice >= this.viewer.getSceneCount()) return;
+    this.viewer.getSplatScene(indice).visible = visible;
   }
 
   async destruir(): Promise<void> {

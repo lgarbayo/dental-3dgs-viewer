@@ -171,3 +171,65 @@ dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
     color: #f2f1ee;
   }
 }
+
+/* --- capas de densidad conmutables --------------------------------------- */
+/* Debajo del selector de caso, en la misma columna derecha.
+   `pointer-events: auto` es OBLIGATORIO: el contenedor #interfaz los desactiva
+   para dejar pasar el arrastre al lienzo, y sin restaurarlos aqui las casillas
+   se ven pero no se pueden pulsar. */
+.capas {
+  position: fixed;
+  top: 3.5rem;
+  right: 0.9rem;
+  z-index: 15;
+  pointer-events: auto;
+  width: min(15rem, calc(100vw - 1.8rem));
+  border: 1px solid var(--borde);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--superficie) 94%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--tinta);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.82rem;
+}
+.capas > summary {
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  list-style-position: inside;
+}
+.capas .cuerpo { margin-top: 0.55rem; display: grid; gap: 0.4rem; }
+.capas .capa {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.capas .capa input { cursor: pointer; margin: 0; accent-color: var(--azul); }
+.capas .muestra {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 0.2rem;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tinta) 35%, transparent);
+}
+.capas .etiqueta { display: flex; flex-direction: column; line-height: 1.15; }
+.capas .etiqueta small { color: var(--tinta-suave); font-size: 0.72rem; }
+.capas .aviso {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--borde);
+  color: var(--tinta-suave);
+  font-size: 0.72rem;
+}
+.capas .aviso code { font-size: 0.72rem; }
+
+@media (prefers-color-scheme: dark) {
+  .capas {
+    border-color: #2a2a30;
+    background: color-mix(in srgb, #16161a 92%, transparent);
+    color: #f2f1ee;
+  }
+  .capas .etiqueta small, .capas .aviso { color: #a3a29e; }
+}

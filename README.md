@@ -20,6 +20,18 @@ Otros comandos: `npm run build` (a `dist/`), `npm run preview`, `npm run typeche
 
 ## Qué se está viendo
 
+Dos casos, en el desplegable de arriba a la derecha:
+
+| caso | origen | gaussianas | PSNR retenidas |
+|---|---|---|---|
+| `01A6GW4A_lower` | escaneo intraoral de **Teeth3DS+** | 147 267 | 32,49 dB |
+| `F1980_lower` | escaneo STL + fotos intraorales de **Bite2Text** | 130 485 | 31,50 dB |
+
+Los dos `.ply` son obras derivadas de datasets con licencia propia; el detalle,
+en [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+
+### El caso de referencia
+
 El caso `01A6GW4A_lower` de Teeth3DS+, entrenado con `gsplat` durante 9 000
 iteraciones sobre 462 vistas sintéticas, y evaluado en 66 vistas retenidas
 (**32,49 dB** de PSNR).
@@ -40,18 +52,31 @@ la fracción de gaussianas útiles (opacas y de tamaño razonable) del 6 % al 35
 ```
 index.html
 vite.config.ts             cabeceras COOP/COEP + separación de chunks
-public/trained_3dgs.ply    campo entrenado, formato 3DGS estándar (24 MB)
+LICENSE                    MIT, para el CÓDIGO
+ATTRIBUTIONS.md            licencia y atribución de cada .ply
+public/*.ply               campos entrenados, formato 3DGS estándar (ignorados por defecto)
 src/
   main.ts                  arranque
   SplatViewer.ts           ciclo de vida del visor
   InfoPanel.ts             ficha del caso sobre el lienzo
-  config.ts                datos del caso y encuadre de cámara
-  estilos.css
+  config.ts                datos de cada caso y encuadre de cámara
+  style.css
   types/gaussian-splats-3d.d.ts   la librería no publica tipos
 ```
 
-## Datos
+## Licencias
 
-[Teeth3DS+](https://github.com/abenhamadou/3DTeethSeg_MICCAI_Challenges)
-(Ben-Hamadou et al., MICCAI 3DTeethSeg'22), **CC-BY 4.0** — atribución obligatoria
-en cualquier derivado, incluido el `.ply` que se sirve aquí.
+El **código** es MIT ([LICENSE](LICENSE)). Los **campos de gaussianas no lo son**:
+cada `.ply` es una obra derivada de un dataset dental y hereda su licencia.
+
+- `public/trained_3dgs.ply` — [Teeth3DS+](https://github.com/abenhamadou/3DTeethSeg_MICCAI_Challenges)
+  (Ben-Hamadou et al., MICCAI 3DTeethSeg'22), **CC BY 4.0**: atribución obligatoria
+  en cualquier derivado, incluido el `.ply` que se sirve aquí.
+- `public/bite2text_f1980_lower.ply` — **Bite2Text** (UNIMORE / Univ. de Ferrara),
+  **CC BY-SA 4.0**: atribución **y compartir-igual**, así que ese fichero se
+  redistribuye bajo esa misma licencia, no bajo la MIT del repositorio.
+
+`public/*.ply` está en `.gitignore` a propósito: publicar un campo es una decisión
+de licencia, no de código, y hace falta `git add -f` para forzarla. El caso de
+CBCT (cohorte **ToothFairy**, CC BY-NC-SA 4.0 y con registro obligatorio) **no se
+publica aquí** por ese motivo. Todo el detalle en [ATTRIBUTIONS.md](ATTRIBUTIONS.md).

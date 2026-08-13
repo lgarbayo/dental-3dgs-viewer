@@ -1,6 +1,8 @@
 import { SceneFormat, Viewer } from '@mkkellogg/gaussian-splats-3d';
 import type { Vec3 } from '@mkkellogg/gaussian-splats-3d';
 
+import type { Camera } from 'three';
+
 import type { CasoConfig } from './config';
 
 /**
@@ -96,6 +98,12 @@ export class SplatViewer {
     caso.capas?.forEach((capa, i) => this.mostrarCapa(i, capa.encendida));
 
     viewer.start();
+  }
+
+  /** La camara del visor, para que las cotas puedan proyectarse sobre ella. */
+  get camara(): Camera {
+    if (!this.viewer) throw new Error('El visor aun no se ha cargado');
+    return this.viewer.camera;
   }
 
   /** Enciende o apaga una capa. El indice es el del array `capas` del caso. */

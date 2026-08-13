@@ -233,3 +233,33 @@ dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
   }
   .capas .etiqueta small, .capas .aviso { color: #a3a29e; }
 }
+
+
+/* --- Cotas: la medida en milimetros sobre la anatomia --------------------- */
+/* Van por encima del canvas y NO capturan el raton: girar el modelo tiene que
+   seguir funcionando con el cursor encima de una cifra. */
+.cotas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+.cota-linea {
+  stroke: #ffd23f;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.cota-punto {
+  fill: #ffd23f;
+  stroke: #1b1b1f;
+  stroke-width: 1;
+}
+.cota-texto {
+  fill: #fff;
+  font: 600 13px/1 ui-sans-serif, system-ui, sans-serif;
+  paint-order: stroke;
+  stroke: #10101390;
+  stroke-width: 3.5;
+}

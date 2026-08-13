@@ -34,7 +34,8 @@ export interface CasoConfig {
   readonly id: string;
   /** Etiqueta para el desplegable. */
   readonly nombre: string;
-  readonly arcada: 'upper' | 'lower';
+  /** 'ambas' para campos que traen maxilar y mandibula (p. ej. derivados de CBCT). */
+  readonly arcada: 'upper' | 'lower' | 'ambas';
   readonly ply: string;
   /** Gaussianas del campo entrenado. */
   readonly primitivas: number;
@@ -57,6 +58,11 @@ export interface CasoConfig {
   readonly creditos: string;
   /** Si existe, el caso se carga como N campos conmutables en vez de uno solo. */
   readonly capas?: readonly CapaConfig[];
+  /**
+   * JSON de cotas a dibujar sobre la anatomia. La medida va EN MILIMETROS sobre
+   * el modelo, como en una radiografia anotada — no como color del campo.
+   */
+  readonly cotas?: string;
 }
 
 export const CASOS: CasoConfig[] = [
@@ -111,5 +117,124 @@ export const CASOS: CasoConfig[] = [
       'Color RGB plano (grado 0): no cambia al girar. El color per-píxel exige ' +
       'fusión foto↔malla (fase posterior).',
     creditos: 'Datos: Bite2Text (UNIMORE / Univ. Ferrara), CC-BY-SA 4.0 — derivado bajo la misma licencia.',
+  },
+  {
+    id: 'ToothFairy2F_001',
+    nombre: 'ToothFairy · F_001 (CBCT → STL → Blender)',
+    arcada: 'ambas',
+    ply: 'toothfairy_f001_cbct.ply',
+    primitivas: 161_997,
+    psnrRetenidas: 38.22,
+    vistasEntrenamiento: 220,
+    vistasRetenidas: 32,
+    iteraciones: 15_000,
+    shGrado: 2,
+    // Campo en mm, centrado en el centroide de los voxeles que ingirio el
+    // cbct-agent; el eje vertical es z (la orbita de render gira sobre z).
+    centro: [0.3, -1.4, 3.9],
+    arriba: [0, 0, 1],
+    direccionCamara: [0.77, 0.54, 0.34],
+    distanciaBase: 150,
+    umbralAlfa: 64,
+    nota:
+      'Unico caso que NO parte de un escaner: parte de un CBCT (0,3 mm isotropo). ' +
+      'cbct-agent (serie DICOM) → isosuperficie a 500 HU (marching cubes) → 252 vistas ' +
+      'Blender/Cycles a 800 px con poses exactas (error de reproyeccion 8·10⁻⁵ px) → gsplat. ' +
+      'Es un modelo de SUPERFICIE: por dentro esta hueco, porque ninguna vista ve el ' +
+      'interior del hueso que el CBCT si midio.',
+    creditos:
+      'Datos: cohorte ToothFairy (DITTO, UNIMORE), CC BY-NC-SA 4.0 — no comercial, ' +
+      'derivados bajo la misma licencia.',
+  },
+  {
+    id: 'ToothFairy2F_001_capas',
+    nombre: 'ToothFairy · F_001 (capas por tejido, volumétrico)',
+    arcada: 'ambas',
+    ply: 'ToothFairy2F_001_diente-esmalte.ply',
+    primitivas: 176_865,
+    psnrRetenidas: 47.62,
+    vistasEntrenamiento: 220,
+    vistasRetenidas: 32,
+    iteraciones: 7_000,
+    shGrado: 0,
+    centro: [0.3, -1.4, 3.9],
+    arriba: [0, 0, 1],
+    direccionCamara: [0.77, 0.54, 0.34],
+    distanciaBase: 150,
+    // Las capas ya vienen con la ganancia de display aplicada (alfa mediana 0,35),
+    // asi que no hace falta el umbral alto del caso fotometrico.
+    umbralAlfa: 5,
+    nota:
+      'Rama VOLUMETRICA: el campo es densidad sigma >= 0 ajustada contra radiografias ' +
+      'sinteticas (Beer-Lambert), sin armonicos esfericos y SIN COLOR. Cinco capas ' +
+      'disjuntas (clase anatomica ∩ rango de HU, asi cada nombre significa un tejido) ' +
+      'que cubren toda la anatomia: encenderlas suma ' +
+      'atenuacion, y las cinco juntas reconstruyen la radiografia completa a 47,62 dB ' +
+      '(el campo unico da 43,23 dB sobre las mismas vistas retenidas). ' +
+      'Cada capa exporta solo sus gaussianas VIVAS: las que caen bajo el suelo del ' +
+      'rasterizador (1/255) no contribuyen a la atenuacion medida y al ampliarlas para ' +
+      'verlas tapaban la estructura. ' +
+      'AVISO: el color de cada capa es FALSO COLOR de visualizacion y la opacidad es ' +
+      'sigma reescalada; el artefacto conserva color_superficie = None (ADR 004 2.8).',
+    creditos:
+      'Datos: cohorte ToothFairy (DITTO, UNIMORE), CC BY-NC-SA 4.0 — no comercial, ' +
+      'derivados bajo la misma licencia.',
+    capas: [
+      { id: 'diente-esmalte', nombre: 'Diente · esmalte', ply: 'ToothFairy2F_001_diente-esmalte.ply',
+        primitivas: 30_718, hu: [2000, null], gananciaDisplay: 42.4,
+        color: '#f2f7ff', encendida: true },
+      { id: 'diente-dentina', nombre: 'Diente · dentina', ply: 'ToothFairy2F_001_diente-dentina.ply',
+        primitivas: 37_424, hu: [null, 2000], gananciaDisplay: 34.1,
+        color: '#d9e3f7', encendida: true },
+      { id: 'hueso-cortical', nombre: 'Hueso · cortical', ply: 'ToothFairy2F_001_hueso-cortical.ply',
+        primitivas: 24_537, hu: [1000, null], gananciaDisplay: 27.1,
+        color: '#eddcb8', encendida: true },
+      { id: 'hueso-trabecular', nombre: 'Hueso · trabecular', ply: 'ToothFairy2F_001_hueso-trabecular.ply',
+        primitivas: 63_860, hu: [300, 1000], gananciaDisplay: 15.3,
+        color: '#d99e8c', encendida: false },
+      { id: 'hueso-medular', nombre: 'Hueso · medular', ply: 'ToothFairy2F_001_hueso-medular.ply',
+        primitivas: 20_326, hu: [null, 300], gananciaDisplay: 17.9,
+        color: '#9e8c85', encendida: false },
+    ],
+  },
+  {
+    id: 'histora_recesion',
+    nombre: 'histora · desplazamiento del margen gingival (inferior)',
+    arcada: 'lower',
+    ply: 'histora_recesion_lower.ply',
+    // Las cotas NO se dibujan todavia. `src/Cotas.ts` y el JSON estan hechos y
+    // probados; falta decidir que se ensena, porque una cifra por seccion no es
+    // fiable de una en una — solo lo es su agregado. Reactivar es descomentar:
+    // cotas: 'histora_recesion_lower_cotas.json',
+    primitivas: 80_618,
+    // Este caso NO viene de un entrenamiento: no hay vistas, ni iteraciones, ni PSNR
+    // que informar, y poner cifras aqui seria inventarlas. Cero significa "no
+    // aplica", y la nota lo dice. Ver el aviso de abajo.
+    psnrRetenidas: 0,
+    vistasEntrenamiento: 0,
+    vistasRetenidas: 0,
+    iteraciones: 0,
+    shGrado: 0,
+    // Marco del arco (PCA de la propia malla): x = largo, y = ancho, z = eje oclusal.
+    // Centrado en el origen por construccion; extension 69,1 x 51,0 x 19,1 mm.
+    centro: [0, 0, 0],
+    arriba: [0, 0, 1],
+    direccionCamara: [0, -0.92, 0.39],
+    distanciaBase: 150,
+    umbralAlfa: 5,
+    nota:
+      'MEDIDA sobre la anatomia, no reconstruccion. El campo es el escaneo POSTERIOR ' +
+      'en marfil plano; las 21 cotas dicen EN MILIMETROS cuanto se movio el margen ' +
+      'gingival respecto al escaneo previo (signo negativo = bajo). ' +
+      'El registro entre los dos momentos se hace SOLO sobre las coronas, que no se ' +
+      'mueven: 0,275 mm de residuo con 95% de solape. Desplazamiento mediano -0,62 mm, ' +
+      'o sea 1,7 veces el ruido del registro. 19 de 21 secciones: dos se descartan '  +
+      'porque el margen aparecio en caras opuestas y la resta no significaria nada. ' +
+      'AVISO: no es un campo entrenado — no hay fotometria detras, solo geometria ' +
+      'medida. Y NO es recesion absoluta: eso se define contra la union ' +
+      'amelocementaria, que esta medido que no sale ni del CBCT ni de esta malla.',
+    creditos:
+      'Datos clinicos (histora). El desplazamiento lo calcula ' +
+      'scripts/recesion_longitudinal.py del monorepo.',
   },
 ];

@@ -1,4 +1,6 @@
 import { CASOS } from './config';
+import { Cotas } from './Cotas';
+import type { CotasJSON } from './Cotas';
 import { InfoPanel } from './InfoPanel';
 import { PanelCapas } from './PanelCapas';
 import { SplatViewer } from './SplatViewer';
@@ -56,6 +58,13 @@ async function main(): Promise<void> {
     cargando.classList.add('oculto');
     // El panel se monta DESPUES de cargar: encender una capa que aun no existe
     // como escena no haria nada y la casilla mentiria.
+    if (caso.cotas) {
+      const respuesta = await fetch(caso.cotas);
+      if (!respuesta.ok) throw new Error(`No se pudo leer ${caso.cotas}`);
+      const cotas = new Cotas((await respuesta.json()) as CotasJSON, raiz);
+      cotas.seguir(visor.camara);
+      window.addEventListener('beforeunload', () => cotas.destruir());
+    }
     if (caso.capas) {
       new PanelCapas(caso.capas, (indice, visible) =>
         visor.mostrarCapa(indice, visible),

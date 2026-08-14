@@ -250,19 +250,39 @@ export const CASOS: CasoConfig[] = [
     distanciaBase: 150,
     umbralAlfa: 5,
     nota:
-      'MEDIDA sobre la anatomia, no reconstruccion. El campo es el escaneo POSTERIOR ' +
-      'en marfil plano; las 21 cotas dicen EN MILIMETROS cuanto se movio el margen ' +
-      'gingival respecto al escaneo previo (signo negativo = bajo). ' +
+      'MEDIDA sobre la anatomia, no reconstruccion. El campo es el escaneo POSTERIOR, ' +
+      'y lo que se midio es cuanto se movio el margen gingival respecto al escaneo ' +
+      'previo (signo negativo = bajo). ' +
       'El registro entre los dos momentos se hace SOLO sobre las coronas, que no se ' +
-      'mueven: 0,275 mm de residuo con 95% de solape. Desplazamiento mediano -0,62 mm, ' +
+      'mueven: 0,275 mm de residuo con 95% de solape. Desplazamiento mediano -0,48 mm, ' +
       'o sea 1,7 veces el ruido del registro. 19 de 21 secciones: dos se descartan '  +
       'porque el margen aparecio en caras opuestas y la resta no significaria nada. ' +
-      'AVISO: no es un campo entrenado — no hay fotometria detras, solo geometria ' +
-      'medida. Y NO es recesion absoluta: eso se define contra la union ' +
-      'amelocementaria, que esta medido que no sale ni del CBCT ni de esta malla.',
+      'La cifra que significa algo es ese AGREGADO. Las cotas por seccion existen ' +
+      '(el JSON y src/Cotas.ts estan hechos) pero no se dibujan: una sola seccion no ' +
+      'es fiable por si misma, y pintarla invitaria a leerla como si lo fuera. ' +
+      'COLOR: esmalte sRGB (216,191,162) y encia (185,115,99), muestreados de las ' +
+      'fotos clinicas DEL MISMO PACIENTE y aplicados POR REGION segun la segmentacion ' +
+      'encia/diente — no es color proyectado vertice a vertice. Las fotos son Adobe ' +
+      'RGB sin perfil ICC (EXIF InteropIndex R03); leidas como sRGB la encia salia un ' +
+      '11% menos roja. El sombreado es difusa ENVOLVENTE horneada, falso y solo para ' +
+      'legibilidad: un campo de gaussianas no tiene luces. ' +
+      'FORMA: no son bolas, son DISCOS TANGENTES a la superficie, orientados con la ' +
+      'normal del vertice y con sigma sacada del espaciado LOCAL de cada punto ' +
+      '(95–199 um, mediana 142) por 25% de grosor. Con bolas isotropas el campo salia ' +
+      'agujereado — 20,45% de la silueta con cobertura incompleta y solo el 13% del ' +
+      'area cerrada; con discos ajustados, 0,34%. El factor de tamano sale de barrerlo ' +
+      'y medirlo, y de paso corrigio una creencia: el campo agujereado PARECIA mas ' +
+      'nitido, pero lo que inflaba su energia de gradiente eran los propios agujeros. ' +
+      'Medida solo sobre superficie cerrada, esa nitidez extra no existia. ' +
+      'AVISO: no es un campo entrenado — no hay fotometria por vista detras, solo ' +
+      'geometria medida y dos colores muestreados. Cada gaussiana esta EXACTAMENTE ' +
+      'donde la puso el escaner, y esa es la razon de preferir esto a un entrenamiento ' +
+      'para una imagen que un clinico va a mirar. Y NO es recesion absoluta: eso se ' +
+      'define contra la union amelocementaria, que esta medido que no sale ni del ' +
+      'CBCT ni de esta malla.',
     creditos:
-      'Datos clinicos (histora). El desplazamiento lo calcula ' +
-      'scripts/recesion_longitudinal.py del monorepo.',
+      'Datos clinicos (histora), con permiso de los facultativos. El desplazamiento y ' +
+      'el color los calcula scripts/seguimiento_histora.py del monorepo.',
   },
 ];
 

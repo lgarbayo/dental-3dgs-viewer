@@ -1,4 +1,4 @@
-import { CASOS } from './config';
+import { CASOS_VISIBLES } from './config';
 import { Cotas } from './Cotas';
 import type { CotasJSON } from './Cotas';
 import { InfoPanel } from './InfoPanel';
@@ -12,10 +12,19 @@ function requerir<T extends HTMLElement>(selector: string): T {
   return el;
 }
 
-/** Indice de caso desde la URL (?caso=N), acotado al rango disponible. */
+/**
+ * Indice del caso pedido en la URL (?caso=id, o ?caso=N de enlaces antiguos).
+ *
+ * Se busca por ID antes que por posicion porque la lista visible NO es la misma en
+ * desarrollo que en produccion —los casos restringidos caen— y un indice significaria
+ * cosas distintas en cada build. El id no se mueve.
+ */
 function casoInicial(): number {
-  const n = Number(new URLSearchParams(location.search).get('caso'));
-  return Number.isInteger(n) && n >= 0 && n < CASOS.length ? n : 0;
+  const pedido = new URLSearchParams(location.search).get('caso') ?? '';
+  const porId = CASOS_VISIBLES.findIndex((c) => c.id === pedido);
+  if (porId >= 0) return porId;
+  const n = Number(pedido);
+  return Number.isInteger(n) && n >= 0 && n < CASOS_VISIBLES.length ? n : 0;
 }
 
 async function main(): Promise<void> {
@@ -25,12 +34,15 @@ async function main(): Promise<void> {
   const interfaz = requerir<HTMLDivElement>('#interfaz');
   const selector = requerir<HTMLSelectElement>('#selector-caso');
 
+  if (CASOS_VISIBLES.length === 0) {
+    throw new Error('No hay ningun caso publicable: todos estan marcados restringidos.');
+  }
   const indice = casoInicial();
-  const caso = CASOS[indice];
+  const caso = CASOS_VISIBLES[indice];
 
-  CASOS.forEach((c, i) => {
+  CASOS_VISIBLES.forEach((c, i) => {
     const opcion = document.createElement('option');
-    opcion.value = String(i);
+    opcion.value = c.id;
     opcion.textContent = c.nombre;
     if (i === indice) opcion.selected = true;
     selector.appendChild(opcion);

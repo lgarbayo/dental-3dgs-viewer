@@ -63,6 +63,20 @@ export interface CasoConfig {
    * el modelo, como en una radiografia anotada — no como color del campo.
    */
   readonly cotas?: string;
+  /**
+   * Si el .ply del caso se puede PUBLICAR. Por omision, 'publicos'.
+   *
+   * Un caso 'restringidos' se sigue declarando aqui —la receta, las cifras y los
+   * creditos son trabajo propio y documentarlos no redistribuye nada— pero NO
+   * aparece en el build de produccion. En `npm run dev` se ve igual que los demas,
+   * que es donde se trabaja con los datos en local.
+   *
+   * No es cosmetica: este repo es PUBLICO y `public/*.ply` esta en .gitignore, asi
+   * que un caso restringido listado en el build seria una entrada rota para
+   * cualquiera que clone. Y sobre todo, cada .ply es un derivado de un dataset con
+   * licencia — publicarlo es una decision de licencia, no de codigo.
+   */
+  readonly datos?: 'publicos' | 'restringidos';
 }
 
 export const CASOS: CasoConfig[] = [
@@ -122,6 +136,11 @@ export const CASOS: CasoConfig[] = [
     id: 'ToothFairy2F_001',
     nombre: 'ToothFairy · F_001 (CBCT → STL → Blender)',
     arcada: 'ambas',
+    // ToothFairy exige registro y aceptar un acuerdo en ditto.ing.unimore.it, ademas
+    // de ser CC BY-NC-SA: el .ply no puede publicarse aqui y nunca ha estado en la
+    // historia del repo. Las cifras si se quedan — describir una medida no es
+    // redistribuir el dato.
+    datos: 'restringidos',
     ply: 'toothfairy_f001_cbct.ply',
     primitivas: 161_997,
     psnrRetenidas: 38.22,
@@ -150,6 +169,7 @@ export const CASOS: CasoConfig[] = [
     id: 'ToothFairy2F_001_capas',
     nombre: 'ToothFairy · F_001 (capas por tejido, volumétrico)',
     arcada: 'ambas',
+    datos: 'restringidos',  // mismo motivo que el caso anterior
     ply: 'ToothFairy2F_001_diente-esmalte.ply',
     primitivas: 176_865,
     psnrRetenidas: 47.62,
@@ -201,6 +221,13 @@ export const CASOS: CasoConfig[] = [
     id: 'histora_recesion',
     nombre: 'histora · desplazamiento del margen gingival (inferior)',
     arcada: 'lower',
+    // Restringido POR AHORA, y por un motivo distinto al de ToothFairy: aqui los
+    // facultativos dieron permiso, pero el .ply sigue sin commitear y una arcada
+    // mandibular en 3D es material identificativo en odontologia forense. Que el
+    // permiso cubra el uso no implica que cubra publicarla en un repo publico, y
+    // la historia de git no se deshace. Para abrirlo: confirmarlo con ellos,
+    // `git add -f public/histora_recesion_lower.ply`, y cambiar esta linea.
+    datos: 'restringidos',
     ply: 'histora_recesion_lower.ply',
     // Las cotas NO se dibujan todavia. `src/Cotas.ts` y el JSON estan hechos y
     // probados; falta decidir que se ensena, porque una cifra por seccion no es
@@ -238,3 +265,18 @@ export const CASOS: CasoConfig[] = [
       'scripts/recesion_longitudinal.py del monorepo.',
   },
 ];
+
+/**
+ * Los casos que el visor OFRECE, que no son todos los declarados.
+ *
+ * En desarrollo se ven todos: es donde se trabaja, con los .ply en `public/` y sin
+ * publicar nada. En el build de produccion caen los `restringidos`, cuyo .ply no
+ * puede subirse a un repo publico y por tanto no estaria ahi para cargarse.
+ *
+ * El filtro es sobre el ARRAY, no sobre la carga: un caso restringido no se lista,
+ * no se puede seleccionar y no se pide por red. Que `CASOS` los siga conteniendo es
+ * deliberado — la receta y las cifras son trabajo propio y quedan documentadas.
+ */
+export const CASOS_VISIBLES: readonly CasoConfig[] = CASOS.filter(
+  (c) => import.meta.env.DEV || c.datos !== 'restringidos',
+);

@@ -1,6 +1,9 @@
 import { CASOS_VISIBLES } from './config';
 import { Cotas } from './Cotas';
 import type { CotasJSON } from './Cotas';
+import { Dientes } from './Dientes';
+import type { TwinJSON } from './Dientes';
+import { PanelTwin } from './PanelTwin';
 import { InfoPanel } from './InfoPanel';
 import { PanelCapas } from './PanelCapas';
 import { SplatViewer } from './SplatViewer';
@@ -77,10 +80,31 @@ async function main(): Promise<void> {
       cotas.seguir(visor.camara);
       window.addEventListener('beforeunload', () => cotas.destruir());
     }
+    // Los paneles de la derecha van en UNA columna, no sueltos: `.capas` y `.ficha` se
+    // posicionan en fijo/absoluto por su cuenta y se taparian entre si.
+    let columna: HTMLDivElement | null = null;
+    if (caso.capas || caso.twin) {
+      columna = document.createElement('div');
+      columna.className = 'columna-twin';
+      interfaz.appendChild(columna);
+    }
     if (caso.capas) {
       new PanelCapas(caso.capas, (indice, visible) =>
         visor.mostrarCapa(indice, visible),
-      ).montar(interfaz);
+      ).montar(columna ?? interfaz);
+    }
+    // El sidecar del gemelo, si el caso lo trae. Va DESPUES de cargar por lo mismo que
+    // las capas: los centroides se proyectan sobre la camara del visor, y esa camara no
+    // existe hasta que la escena esta montada.
+    if (caso.twin && columna) {
+      const respuesta = await fetch(caso.twin);
+      if (!respuesta.ok) throw new Error(`No se pudo leer ${caso.twin}`);
+      const twin = (await respuesta.json()) as TwinJSON;
+      const dientes = new Dientes(twin, raiz);
+      dientes.montar(columna);
+      dientes.seguir(visor.camara);
+      new PanelTwin(twin, caso.descargas ?? []).montar(columna);
+      window.addEventListener('beforeunload', () => dientes.destruir());
     }
   } catch (error) {
     cargando.innerHTML =

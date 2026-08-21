@@ -263,3 +263,153 @@ dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
   stroke: #10101390;
   stroke-width: 3.5;
 }
+
+
+/* --- gemelo digital: marcas por diente y sus fichas ----------------------- */
+/* ⚠️ La paleta de este repo es CLARA (--tinta casi negro sobre --superficie casi
+   blanca). Estos estilos llegaron con variables inventadas —`--linea`, `--panel`— y
+   fallbacks oscuros, asi que pintaban bordes y chips oscuros sobre panel claro: se veian
+   invertidos. Aqui solo se usan las variables que el repo declara de verdad. */
+.mal { color: #b3261e; font-weight: 600; }
+.aviso-color { color: #a8501f; }
+/* Las marcas van en SVG proyectado, igual que las cotas: tienen que verse tambien
+   cuando el diente queda detras de la superficie, y en 3D habria que pelearse con la
+   profundidad. */
+.dientes-marcas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+.diente-marca {
+  fill: none;
+  stroke: #4fb8ac;
+  stroke-width: 1.5;
+  transition: r 120ms ease;
+}
+.diente-marca.activa {
+  fill: rgba(79, 184, 172, 0.25);
+  stroke-width: 2.5;
+  r: 9;
+}
+
+/* Los dos paneles del gemelo comparten columna a la derecha, bajo el selector de caso.
+   Cada `.ficha` se posiciona en absoluto por su cuenta, asi que sin esta columna la del
+   gemelo caeria encima de la del caso, arriba a la izquierda. */
+.columna-twin {
+  position: fixed;
+  top: 3.5rem;
+  right: 0.9rem;
+  z-index: 15;
+  pointer-events: auto;
+  width: min(19rem, calc(100vw - 1.8rem));
+  max-height: calc(100dvh - 4.4rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 0;
+}
+/* Dentro de la columna los paneles fluyen: se les quita el posicionamiento propio.
+   `.capas` estaba en `position: fixed` en el mismo sitio que la columna, asi que sin
+   esto el panel de capas y el del gemelo se pintaban uno encima del otro. */
+.columna-twin .capas {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 100%;
+  flex: 0 0 auto;
+}
+.columna-twin .ficha {
+  position: static;
+  top: auto;
+  left: auto;
+  width: 100%;
+  max-height: none;
+  min-height: 0;
+  overflow-y: auto;
+}
+.columna-twin .ficha:not([open]) { width: 100%; }
+
+.ficha-diente {
+  border: 1px solid var(--borde);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--superficie) 94%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--tinta);
+  font-size: 0.83rem;
+  padding: 0.75rem 0.9rem;
+  flex: 0 0 auto;
+}
+.ficha-diente h3,
+.ficha-twin h3 {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.ficha-twin h3 { margin-top: 18px; }
+.ficha-twin h3:first-of-type { margin-top: 0; }
+
+.ficha-diente dl,
+.ficha-twin dl { margin: 0; }
+.ficha-diente dl div,
+.ficha-twin dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--borde);
+}
+.ficha-diente dt,
+.ficha-twin dt { opacity: 0.7; }
+.ficha-diente dd,
+.ficha-twin dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+.rango { opacity: 0.45; font-size: 0.85em; margin-left: 6px; }
+
+.ausente,
+.vacio { opacity: 0.5; font-style: italic; }
+
+.chips { margin: 9px 0 0; }
+.chips span {
+  display: inline-block;
+  background: var(--borde);
+  border-radius: 3px;
+  padding: 2px 7px;
+  margin: 2px 3px 2px 0;
+  font-size: 11px;
+}
+
+.gate { margin: 0; padding-left: 0; list-style: none; }
+.gate li {
+  border-left: 2px solid #a8501f;
+  padding: 6px 0 6px 10px;
+  margin-bottom: 6px;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+.gate li.vacio { border-left-color: var(--azul); }
+
+.descargas { margin: 0; padding-left: 0; list-style: none; }
+.descargas li { padding: 5px 0; border-bottom: 1px solid var(--borde); }
+.descargas small { display: block; opacity: 0.5; font-size: 0.8em; }
+.nota.aviso { border-left: 2px solid #a8501f; padding-left: 10px; }
+
+.ficha-diente h4 {
+  margin: 12px 0 5px;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.45;
+}
+.ficha-diente h4:first-of-type { margin-top: 6px; }
+.ficha-diente .gate li { font-size: 0.85em; }
+.aviso-pieza {
+  margin: 0 0 8px;
+  padding-left: 9px;
+  border-left: 2px solid #a8501f;
+  font-size: 0.85em;
+  opacity: 0.85;
+}

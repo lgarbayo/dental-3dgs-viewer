@@ -17,3 +17,16 @@ dist/
 # seguimiento: .gitignore no afecta a lo que ya esta en el indice.
 # Para anadir uno nuevo hace falta `git add -f`, que obliga a pensarlo.
 public/*.ply
+
+# --- el gemelo digital: TODO su paquete, no solo el .ply -------------------- #
+# El caso `histora-twin` es un paciente real, y su paquete son cuatro ficheros: el
+# .ply derivado (ya cubierto arriba), la malla del escaner, el campo del gemelo y el
+# sidecar JSON con la capa clinica. Los tres ultimos NO llevan extension .ply o si la
+# llevan es otra, asi que la regla de arriba no los tapaba: el STL es la superficie
+# intraoral del paciente y el JSON sus hallazgos por diente.
+#
+# Ninguno identifica al paciente —el `viewer-export-agent` sustituye el nombre del
+# fichero del proveedor por un hash— pero dato clinico seudonimizado sigue siendo dato
+# clinico, y este repo es publico.
+public/*.stl
+public/histora_twin*.json

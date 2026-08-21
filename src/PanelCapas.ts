@@ -26,8 +26,13 @@ export class PanelCapas {
     this.el = document.createElement('details');
     this.el.className = 'capas';
     (this.el as HTMLDetailsElement).open = true;
+    // El titulo lo decide el CRITERIO de separacion, no la costumbre. Las capas de
+    // ToothFairy son ventanas de Hounsfield; las del gemelo se separan por procedencia
+    // y anatomia —dientes, encia, resto—, que es justo lo que la densidad no puede dar.
+    // Llamarlas «de densidad» afirmaria un criterio que ahi no se uso.
+    const porDensidad = capas.every((c) => c.detalle === undefined);
     this.el.innerHTML = `
-      <summary>Capas de densidad</summary>
+      <summary>${porDensidad ? 'Capas de densidad' : 'Capas'}</summary>
       <div class="cuerpo">
         ${capas
           .map(
@@ -35,13 +40,15 @@ export class PanelCapas {
           <label class="capa">
             <input type="checkbox" data-indice="${i}" ${c.encendida ? 'checked' : ''} />
             <span class="muestra" style="background:${c.color}"></span>
-            <span class="etiqueta">${c.nombre}<small>${rangoHU(c.hu)}</small></span>
+            <span class="etiqueta">${c.nombre}<small>${c.detalle ?? rangoHU(c.hu)}</small></span>
           </label>`,
           )
           .join('')}
         <p class="aviso">
           Falso color y opacidad reescalada: el CBCT mide atenuación, no color.
           El artefacto conserva <code>color_superficie = None</code>.
+          ${porDensidad ? '' : 'Estas capas se separan por <strong>procedencia</strong>: '
+            + 'la densidad no distingue raíz de hueso alveolar.'}
         </p>
       </div>`;
 

@@ -21,6 +21,16 @@ export interface CapaConfig {
   /** Ventana de Hounsfield de la capa; null = sin cota por ese lado. */
   readonly hu: readonly [number | null, number | null];
   /**
+   * Subtitulo alternativo cuando la capa NO se separa por densidad.
+   *
+   * Las capas del gemelo se separan por PROCEDENCIA y anatomia —dientes segmentados,
+   * encia del escaner, resto del campo— y eso es justo lo que la densidad no puede dar:
+   * el hueso alveolar y la raiz comparten HU, y esta medido que ningun umbral los separa
+   * (`docs/research/segmentacion-diente-cbct.md` del monorepo). Escribir un rango de HU
+   * ahi seria afirmar un criterio que no se uso.
+   */
+  readonly detalle?: string;
+  /**
    * Ganancia de visualizacion: alfa = 1 - exp(-g*sigma). NO es dato — la sigma
    * del artefacto es densidad sin cota, y un visor espera alfa en [0,1].
    */
@@ -63,6 +73,21 @@ export interface CasoConfig {
    * el modelo, como en una radiografia anotada — no como color del campo.
    */
   readonly cotas?: string;
+  /**
+   * Sidecar del gemelo digital: capa clinica, centroides por diente, motivos del gate y
+   * el recorte de la vista. Lo emite `viewer-export-agent` de `agentic-smart-health`.
+   *
+   * Si esta, el caso deja de ser «un campo bonito» y pasa a ser el producto: se puede
+   * seleccionar cada pieza y leer lo que el informe dice de ella.
+   */
+  readonly twin?: string;
+  /** Ficheros reversibles del caso, con su desviacion medida. Ver `PanelTwin`. */
+  readonly descargas?: readonly {
+    readonly nombre: string;
+    readonly fichero: string;
+    readonly que_es: string;
+    readonly desviacion_mm: number | null;
+  }[];
   /**
    * Si el .ply del caso se puede PUBLICAR. Por omision, 'publicos'.
    *
@@ -283,6 +308,110 @@ export const CASOS: CasoConfig[] = [
     creditos:
       'Datos clinicos (histora), con permiso de los facultativos. El desplazamiento y ' +
       'el color los calcula scripts/seguimiento_histora.py del monorepo.',
+  },
+  {
+    id: 'histora-twin',
+    nombre: 'histora · gemelo digital completo (CBCT + escaner + informes)',
+    arcada: 'ambas',
+    // El .ply de arriba es el que se carga cuando NO hay capas; aqui hay tres, asi que
+    // `capas` manda y este queda como referencia del paquete completo.
+    ply: 'histora_twin-coronas.ply',
+    twin: 'histora_twin.json',
+    capas: [
+      {
+        id: 'coronas',
+        nombre: 'Coronas',
+        ply: 'histora_twin-coronas.ply',
+        primitivas: 80_513,
+        hu: [null, null],
+        detalle: 'del escaner: COMPLETAS y ya separadas por pieza',
+        gananciaDisplay: 3,
+        color: '#4fb8ac',
+        encendida: true,
+      },
+      {
+        id: 'raices',
+        nombre: 'Raices',
+        ply: 'histora_twin-raices.ply',
+        primitivas: 103_039,
+        hu: [null, null],
+        detalle: 'del CBCT: lo unico que ve bajo la encia, y PARCIAL (51%)',
+        gananciaDisplay: 3,
+        color: '#8f9cd8',
+        encendida: true,
+      },
+      {
+        id: 'encia',
+        nombre: 'Encia',
+        ply: 'histora_twin-encia.ply',
+        primitivas: 31_554,
+        hu: [null, null],
+        detalle: 'del escaner, sin densidad medida',
+        gananciaDisplay: 3,
+        color: '#d98548',
+        encendida: true,
+      },
+      {
+        id: 'resto',
+        nombre: 'Resto del campo',
+        ply: 'histora_twin-resto.ply',
+        primitivas: 120_000,
+        hu: [null, null],
+        detalle: 'hueso y craneo sin nombre',
+        gananciaDisplay: 3,
+        color: '#6b7480',
+        encendida: false,
+      },
+    ],
+    primitivas: 335_106,
+    psnrRetenidas: 0,
+    vistasEntrenamiento: 0,
+    vistasRetenidas: 0,
+    iteraciones: 0,
+    shGrado: 0,
+    // Encuadre sacado de la geometria del propio paquete, no a ojo.
+    centro: [1, -2, 10],
+    arriba: [0, 0, 1],
+    direccionCamara: [0, -1, 0.3],
+    distanciaBase: 105,
+    umbralAlfa: 5,
+    descargas: [
+      {
+        nombre: 'malla del escaner (STL)',
+        fichero: 'histora_twin.stl',
+        que_es: 'la superficie tal como entro, en el marco del escaner',
+        desviacion_mm: 0.0,
+      },
+      {
+        nombre: 'campo del gemelo (PLY)',
+        fichero: 'histora_twin_campo.ply',
+        que_es: 'perfil ash-twin/1.0: density sin cota, escalas en mm, region_id por gaussiana',
+        desviacion_mm: 0.0,
+      },
+      {
+        nombre: 'contrato del gemelo (JSON)',
+        fichero: 'histora_twin.json',
+        que_es: 'el sidecar que estas viendo: capa clinica, gate y esquema del campo',
+        desviacion_mm: null,
+      },
+    ],
+    nota:
+      'EL PRODUCTO, no un experimento de reconstruccion. Recorrido completo de ' +
+      'agentic-smart-health sobre un caso clinico real: CBCT (397 cortes) + escaner ' +
+      'intraoral + tres informes en PDF + nueve fotos, once agentes, 12 s. Los dientes ' +
+      'salen del CBCT —es lo unico que ve la raiz— y la encia del escaner, que es lo ' +
+      'unico que la mide bien; el codigo FDI lo pone el escaner porque los dientes se ' +
+      'tocan en el punto de contacto y ningun umbral del volumen los separa. ' +
+      'PINCHA UN DIENTE para leer lo que el informe dice de el. Las CORONAS salen del ' + 'escaner —completas y ya separadas— y las RAICES del CBCT, que es lo unico que ve ' + 'bajo la encia pero solo cubre el 51%% de cada pieza. Cada fuente ensena lo que sabe medir. ' +
+      'AVISO: este .ply es DERIVADO. Su opacidad es una ganancia de visualizacion ' +
+      '(alfa = 1 - exp(-3*sigma)), su color es falso —un CBCT no mide color— y su sigma ' +
+      'va inflada x1,70 para que los splats se toquen tras decimar. El gemelo ' +
+      'reversible es el PLY del campo, que se puede descargar arriba con su desviacion ' +
+      'medida al lado.',
+    creditos:
+      'Datos clinicos (histora), con permiso de los facultativos y del paciente. ' +
+      'El paquete lo emite viewer-export-agent del monorepo agentic-smart-health.',
+    datos: 'restringidos',
   },
 ];
 

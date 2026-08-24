@@ -116,12 +116,15 @@ export interface CasoConfig {
 /**
  * El caso con el encuadre MEDIDO del sidecar, si lo trae.
  *
- * **Lo que arregla es la orbita, no la primera imagen.** El visor gira alrededor de
- * `cameraUp` (ver `SplatViewer`), y hasta ahora eso era un eje del mundo escrito a mano
- * aqui abajo — `[0, 0, 1]` en casi todos los casos. Cuando el eje oclusal de la arcada no
- * coincide con el, arrastrar el raton no da la vuelta a la arcada: la vuelca, y no hay
- * forma de llegar a la cara vestibular de una pieza. El sidecar trae el eje oclusal
- * deducido de las etiquetas FDI, que es el que un clinico espera.
+ * El visor gira alrededor de `cameraUp` (ver `SplatViewer`), y hasta ahora eso era un eje
+ * del mundo escrito a mano aqui abajo — `[0, 0, 1]` en casi todos los casos, junto con un
+ * `centro` y una `distancia` copiados a ojo. El sidecar los trae MEDIDOS: el eje superior
+ * deducido de las etiquetas FDI, el centroide real de la arcada y la distancia que la
+ * encuadra.
+ *
+ * ⚠️ El eje que manda es el **superior**, no el oclusal. En un maxilar son opuestos —las
+ * coronas cuelgan hacia abajo— y usar el oclusal pone la cabeza boca abajo: la arcada
+ * superior se ve exactamente como una inferior, y nadie que no conozca el caso lo nota.
  *
  * Los valores escritos a mano se quedan como respaldo, no como estorbo: un caso sin
  * escaner etiquetado no puede medirlos, y en Teeth3DS+ o Bite2Text no hay sidecar
@@ -137,6 +140,11 @@ export function conEncuadre(caso: CasoConfig, encuadre?: EncuadreJSON): CasoConf
   const factor = media(encuadre.fov_grados) / media(FOV_VISOR);
   return {
     ...caso,
+    // La arcada tambien se mide: sale del cuadrante de las piezas etiquetadas. Este caso
+    // se declaraba `ambas` porque el campo del CBCT llega a las dos, pero las coronas, la
+    // encia y las raices son del maxilar y las piezas seleccionables van de la 11 a la 28.
+    // Quien lea «ambas» esperara pinchar un molar inferior y no va a poder.
+    arcada: encuadre.arcada,
     centro: [...encuadre.centro] as Vec3,
     arriba: [...encuadre.arriba] as Vec3,
     direccionCamara: [...encuadre.direccion] as Vec3,

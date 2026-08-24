@@ -48,14 +48,23 @@ export interface Diente {
  */
 export interface EncuadreJSON {
   readonly centro: readonly [number, number, number];
-  /** Eje de ORBITA: el oclusal de la arcada. Ver `CasoConfig.arriba`. */
+  /**
+   * Eje de ORBITA: la direccion SUPERIOR, hacia la coronilla. Ver `CasoConfig.arriba`.
+   *
+   * ⚠️ **No es el oclusal**, y confundirlos pone la cabeza boca abajo. El oclusal va de la
+   * encia a las coronas: en un maxilar las coronas cuelgan hacia abajo, asi que apunta a
+   * inferior y una arcada superior se ve exactamente como una inferior. Paso.
+   */
   readonly arriba: readonly [number, number, number];
   readonly direccion: readonly [number, number, number];
   readonly distancia: number;
   /** Campo vertical con el que se calculo `distancia`. Con otro no encuadra. */
   readonly fov_grados: number;
+  /** Cual de las dos, deducido del CUADRANTE de las piezas etiquetadas. */
+  readonly arcada: 'upper' | 'lower';
   readonly ejes: {
     readonly oclusal: readonly [number, number, number];
+    readonly superior: readonly [number, number, number];
     readonly derecha: readonly [number, number, number];
     readonly anterior: readonly [number, number, number];
   };

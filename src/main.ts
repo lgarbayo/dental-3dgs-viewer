@@ -1,4 +1,4 @@
-import { CASOS_VISIBLES } from './config';
+import { CASOS_VISIBLES, conEncuadre } from './config';
 import { Cotas } from './Cotas';
 import type { CotasJSON } from './Cotas';
 import { Dientes } from './Dientes';
@@ -60,9 +60,24 @@ async function main(): Promise<void> {
 
   new InfoPanel(caso).montar(interfaz);
 
+  // ⚠️ El sidecar se lee ANTES de montar el visor, y no despues como los paneles. El eje
+  // de orbita y el encuadre son argumentos del constructor de `Viewer`: leerlos tarde
+  // significaria montar la escena con el eje del mundo escrito a mano y corregirla
+  // despues, que es un salto visible y deja el primer arrastre girando mal.
+  //
+  // Si el caso no trae sidecar, o el sidecar no trae encuadre —no hay escaner etiquetado
+  // con que medirlo—, `conEncuadre` devuelve el caso tal cual y manda el `config.ts`.
+  let twin: TwinJSON | null = null;
+  if (caso.twin) {
+    const respuesta = await fetch(caso.twin);
+    if (!respuesta.ok) throw new Error(`No se pudo leer ${caso.twin}`);
+    twin = (await respuesta.json()) as TwinJSON;
+  }
+  const encuadrado = conEncuadre(caso, twin?.encuadre);
+
   const visor = new SplatViewer({
     raiz,
-    caso,
+    caso: encuadrado,
     onProgress: (porcentaje) => {
       barra.style.width = `${porcentaje}%`;
     },
@@ -93,13 +108,10 @@ async function main(): Promise<void> {
         visor.mostrarCapa(indice, visible),
       ).montar(columna ?? interfaz);
     }
-    // El sidecar del gemelo, si el caso lo trae. Va DESPUES de cargar por lo mismo que
-    // las capas: los centroides se proyectan sobre la camara del visor, y esa camara no
-    // existe hasta que la escena esta montada.
-    if (caso.twin && columna) {
-      const respuesta = await fetch(caso.twin);
-      if (!respuesta.ok) throw new Error(`No se pudo leer ${caso.twin}`);
-      const twin = (await respuesta.json()) as TwinJSON;
+    // Los paneles del gemelo se MONTAN aqui, aunque el sidecar ya se leyo arriba: los
+    // centroides se proyectan sobre la camara del visor, y esa camara no existe hasta que
+    // la escena esta montada.
+    if (twin && columna) {
       const dientes = new Dientes(twin, raiz);
       dientes.montar(columna);
       dientes.seguir(visor.camara);

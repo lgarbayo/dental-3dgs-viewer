@@ -39,6 +39,29 @@ export interface Diente {
 }
 
 /** El sidecar que acompaña al .ply del twin. Lo emite `viewer-export-agent`. */
+/**
+ * Encuadre y eje de orbita MEDIDOS sobre los ejes anatomicos de la arcada.
+ *
+ * Lo emite `viewer-export-agent` a partir de las etiquetas FDI del escaner, no de los
+ * ejes del fichero. Es opcional porque un caso sin escaner etiquetado no lo trae: ahi el
+ * `config.ts` se queda con lo que tenga escrito a mano, y el gate lo dice.
+ */
+export interface EncuadreJSON {
+  readonly centro: readonly [number, number, number];
+  /** Eje de ORBITA: el oclusal de la arcada. Ver `CasoConfig.arriba`. */
+  readonly arriba: readonly [number, number, number];
+  readonly direccion: readonly [number, number, number];
+  readonly distancia: number;
+  /** Campo vertical con el que se calculo `distancia`. Con otro no encuadra. */
+  readonly fov_grados: number;
+  readonly ejes: {
+    readonly oclusal: readonly [number, number, number];
+    readonly derecha: readonly [number, number, number];
+    readonly anterior: readonly [number, number, number];
+  };
+  readonly medido: string;
+}
+
 export interface TwinJSON {
   readonly acquisition_id: string;
   readonly schema: string;
@@ -52,6 +75,8 @@ export interface TwinJSON {
   readonly medidas: readonly Medida[];
   readonly gate: readonly string[];
   readonly reversibilidad: { readonly aviso: string };
+  /** Ausente si el caso no trae escaner etiquetado con que medirlo. */
+  readonly encuadre?: EncuadreJSON;
 }
 
 /** A menos de esta fraccion de la pantalla, un clic cuenta como «ese diente». */

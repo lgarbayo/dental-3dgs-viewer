@@ -1,5 +1,7 @@
 import type { Vec3 } from '@mkkellogg/gaussian-splats-3d';
 
+import type { EncuadreJSON } from './Dientes';
+
 /**
  * Metadatos y encuadre de un caso. Cada caso trae SU propio grado de armonicos y
  * su encuadre de camara, porque conviven campos en espacios distintos:
@@ -39,6 +41,13 @@ export interface CapaConfig {
   readonly color: string;
   readonly encendida: boolean;
 }
+
+/**
+ * Campo vertical de la camara de `gaussian-splats-3d` (`THREE_CAMERA_FOV`). No es
+ * nuestro: se declara aqui porque es lo que hace comparable la `distancia` que emite
+ * el sidecar, que se calcula con SU propio campo.
+ */
+export const FOV_VISOR = 50;
 
 export interface CasoConfig {
   readonly id: string;
@@ -102,6 +111,37 @@ export interface CasoConfig {
    * licencia — publicarlo es una decision de licencia, no de codigo.
    */
   readonly datos?: 'publicos' | 'restringidos';
+}
+
+/**
+ * El caso con el encuadre MEDIDO del sidecar, si lo trae.
+ *
+ * **Lo que arregla es la orbita, no la primera imagen.** El visor gira alrededor de
+ * `cameraUp` (ver `SplatViewer`), y hasta ahora eso era un eje del mundo escrito a mano
+ * aqui abajo — `[0, 0, 1]` en casi todos los casos. Cuando el eje oclusal de la arcada no
+ * coincide con el, arrastrar el raton no da la vuelta a la arcada: la vuelca, y no hay
+ * forma de llegar a la cara vestibular de una pieza. El sidecar trae el eje oclusal
+ * deducido de las etiquetas FDI, que es el que un clinico espera.
+ *
+ * Los valores escritos a mano se quedan como respaldo, no como estorbo: un caso sin
+ * escaner etiquetado no puede medirlos, y en Teeth3DS+ o Bite2Text no hay sidecar
+ * ninguno.
+ *
+ * ⚠️ `distancia` solo encuadra con el campo vertical con que se calculo. El visor usa el
+ * de `gaussian-splats-3d` (50 grados); si el sidecar declara otro, se reescala por la
+ * tangente del semiangulo en vez de darlo por bueno.
+ */
+export function conEncuadre(caso: CasoConfig, encuadre?: EncuadreJSON): CasoConfig {
+  if (!encuadre) return caso;
+  const media = (grados: number) => Math.tan((grados / 2) * (Math.PI / 180));
+  const factor = media(encuadre.fov_grados) / media(FOV_VISOR);
+  return {
+    ...caso,
+    centro: [...encuadre.centro] as Vec3,
+    arriba: [...encuadre.arriba] as Vec3,
+    direccionCamara: [...encuadre.direccion] as Vec3,
+    distanciaBase: encuadre.distancia * factor,
+  };
 }
 
 export const CASOS: CasoConfig[] = [
@@ -333,7 +373,7 @@ export const CASOS: CasoConfig[] = [
         id: 'raices',
         nombre: 'Raices',
         ply: 'histora_twin-raices.ply',
-        primitivas: 103_039,
+        primitivas: 51_429,
         hu: [null, null],
         detalle: 'del CBCT: lo unico que ve bajo la encia, y PARCIAL (51%)',
         gananciaDisplay: 3,
@@ -355,15 +395,26 @@ export const CASOS: CasoConfig[] = [
         id: 'resto',
         nombre: 'Resto del campo',
         ply: 'histora_twin-resto.ply',
-        primitivas: 120_000,
+        primitivas: 95_870,
         hu: [null, null],
         detalle: 'hueso y craneo sin nombre',
         gananciaDisplay: 3,
         color: '#6b7480',
         encendida: false,
       },
+      {
+        id: 'escaner-gs',
+        nombre: 'Escaner · 3DGS entrenado',
+        ply: 'histora_twin-escaner-gs.ply',
+        primitivas: 108_902,
+        hu: [null, null],
+        detalle: 'APARIENCIA: reconstruida contra renders, no medida',
+        gananciaDisplay: 1,
+        color: '#8f9cd8',
+        encendida: false,
+      },
     ],
-    primitivas: 335_106,
+    primitivas: 368_268,
     psnrRetenidas: 0,
     vistasEntrenamiento: 0,
     vistasRetenidas: 0,
@@ -413,6 +464,33 @@ export const CASOS: CasoConfig[] = [
       'El paquete lo emite viewer-export-agent del monorepo agentic-smart-health.',
     datos: 'restringidos',
   },
+  {
+    id: 'gs-escaner-prueba',
+    nombre: 'PRUEBA · escaner superior entrenado como 3DGS',
+    arcada: 'upper',
+    ply: 'gs_escaner-coronas.ply',
+    primitivas: 74_333,
+    psnrRetenidas: 27.60,
+    vistasEntrenamiento: 1200,
+    vistasRetenidas: 400,
+    iteraciones: 6000,
+    shGrado: 0,
+    centro: [0, 0, 0],
+    arriba: [0, 0, 1],
+    direccionCamara: [0, -1, 0.4],
+    distanciaBase: 110,
+    umbralAlfa: 5,
+    nota:
+      'Coronas del escaner superior entrenadas como 3DGS contra 1600 renders EEVEE del ' +
+      'STL. APARIENCIA, no medida: las gaussianas NO son los vertices del escaner. La ' +
+      'etiqueta FDI si es exacta — viaja como parametro con tasa cero, asi que cada ' +
+      'gaussiana desciende de un vertice de una sola pieza.',
+    creditos: 'Datos clinicos (histora), con permiso del paciente.',
+    datos: 'restringidos',
+  },
+
+
+
 ];
 
 /**
